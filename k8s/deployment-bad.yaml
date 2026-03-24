@@ -13,10 +13,21 @@ spec:
       labels:
         app: webapp
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        seccompProfile:
+          type: RuntimeDefault
       containers:
       - name: webapp
         image: nginx:1.25-alpine
         securityContext:
-          privileged: false
-        ports:
-        - containerPort: 80
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop: ["ALL"]
+        resources:
+          limits:
+            cpu: "200m"
+            memory: "128Mi"
+
