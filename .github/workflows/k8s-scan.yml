@@ -5,7 +5,6 @@ on:
     branches: ["main"]
 
 jobs:
-  # Job 1 : Kubesec — score numérique par manifeste, gate bloquant si score < 1
   kubesec-scan:
     runs-on: ubuntu-latest
     steps:
@@ -14,25 +13,16 @@ jobs:
 
       - name: Installer Kubesec
         run: |
-          # Télécharge le binaire depuis GitHub releases et l'installe dans /usr/local/bin
-          curl -sSL https://github.com/controlplaneio/kubesec/releases/latest/download/kubesec_linux_amd64.tar.gz \
-            -o /tmp/kubesec.tar.gz
+          curl -sSL https://github.com/controlplaneio/kubesec/releases/latest/download/kubesec_linux_amd64.tar.gz -o /tmp/kubesec.tar.gz
           tar xzf /tmp/kubesec.tar.gz -C /tmp/
           sudo mv /tmp/kubesec /usr/local/bin/kubesec
 
       - name: Scanner tous les manifestes — score minimum 1
         run: |
           EXIT=0
-          # Parcourt tous les fichiers .yaml du répertoire k8s/
           for f in $(find k8s -name "*.yaml"); do
-            # Extrait le score numérique via python3 — score négatif = manifeste dangereux
-            score=$(kubesec scan "$f" | python3 -c "
-              import json,sys
-                d=json.load(sys.stdin)
-                d=d[0] if isinstance(d,list) else d
-                print(d.get('score',0))")
+            score=$(kubesec scan "$f" | python3 -c "import json,sys; d=json.load(sys.stdin); d=d[0] if isinstance(d,list) else d; print(d.get('score',0))")
             echo "$f: score=$score"
-            # Bloque si le score est inférieur à 1
             if [ "$score" -lt 1 ]; then
               echo "❌ ÉCHEC: score trop bas pour $f"
               EXIT=1
@@ -40,7 +30,6 @@ jobs:
           done
           exit $EXIT
 
-  # Job 2 : Checkov — analyse multi-règles, bloque sur toute violation
   checkov-scan:
     runs-on: ubuntu-latest
     steps:
@@ -52,7 +41,6 @@ jobs:
 
       - name: Scanner le répertoire k8s/
         run: |
-          # Analyse tous les manifestes du répertoire k8s/ selon le framework Kubernetes
           checkov -d k8s/ \
             --framework kubernetes
-
+ 
