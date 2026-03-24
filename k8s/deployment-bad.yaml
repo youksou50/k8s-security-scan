@@ -15,8 +15,8 @@ spec:
     spec:
       containers:
       - name: webapp
-        image: nginx:latest
+        image: nginx:1.25-alpine
         securityContext:
-          privileged: true
+          privileged: false
         ports:
         - containerPort: 80
