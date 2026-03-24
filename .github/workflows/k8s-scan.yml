@@ -28,9 +28,9 @@ jobs:
             # Extrait le score numérique via python3 — score négatif = manifeste dangereux
             score=$(kubesec scan "$f" | python3 -c "
               import json,sys
-              d=json.load(sys.stdin)
-              d=d[0] if isinstance(d,list) else d
-              print(d.get('score',0))")
+                d=json.load(sys.stdin)
+                d=d[0] if isinstance(d,list) else d
+                print(d.get('score',0))")
             echo "$f: score=$score"
             # Bloque si le score est inférieur à 1
             if [ "$score" -lt 1 ]; then
